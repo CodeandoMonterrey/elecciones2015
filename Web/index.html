@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+
+var width = 960,
+    height = 1800;
+
+var projection = d3.geo.albers()
+	.scale(4000);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var tooltip = d3.select("body")
+	.append("div")
+	.attr("class","data-tooltip")
+	.style("position", "absolute")
+	.style("z-index", "10")
+	.style("visibility", "hidden");
+
+var municipios = new Array(); 
+
+
+var colorpalette = new Array(); // or just []
+colorpalette['Partido.Acción.Nacional'] = "Blue";
+colorpalette['Partido.Revolucionario.Institucional'] = "Red";
+colorpalette['Partido.de.la.Revolución.Democrática'] = "Yellow";
+colorpalette['Movimiento.Ciudadano'] = "Yellow";
+colorpalette['Nueva.Alianza.Partido.Político.Nacional'] = "Light Blue";
+colorpalette['Partido.Político.Nacional..Encuentro.Social'] = "Purple";
+colorpalette['Partido.del.Trabajo'] = "Light Red";
+
+var ganador = ""
+var color = "Gray"
+
+data = d3.csv("data/ganadores_mun.csv")
+    .row(function(d) { municipios[d.ID]=d.PARTIDO})
+    .get(function(error, rows) { console.log(rows); }),
+d3.json("maps/municipal.json", function(error, map) {  
+	svg.append("g")
+      .attr("class", "municipios")
+    .selectAll("path")
+      .data(topojson.feature(map, map.objects.subunits).features)
+    .enter().append("path")
+      .style("fill",function(d) { 
+      	console.log(d)
+      	ganador = municipios[d.id]
+      	return colorpalette[ganador]; })
+      .attr("d", path)	
+      .on("mouseover", function(d){return tooltip.style("visibility", "visible").text(d.id);})
+	.on("mousemove", function(d){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px").text(d.id);})
+	.on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+});
+
+
+
+
+
+
+</script>
